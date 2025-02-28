@@ -1,13 +1,15 @@
 from flask import Flask, jsonify, render_template, request
 import requests
 from flask_cors import CORS
+from http.server import BaseHTTPRequestHandler
+import os 
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests (needed for frontend)
 
 # ✅ Replace with your actual WATI API details
-WATI_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3MmI1ZDI5NC1mMGVmLTQ5MjctYmRlZS01NjE5MWZiNzM1OTgiLCJ1bmlxdWVfbmFtZSI6Imt1bGthcm5pcmFodWw4OEBnbWFpbC5jb20iLCJuYW1laWQiOiJrdWxrYXJuaXJhaHVsODhAZ21haWwuY29tIiwiZW1haWwiOiJrdWxrYXJuaXJhaHVsODhAZ21haWwuY29tIiwiYXV0aF90aW1lIjoiMDIvMjAvMjAyNSAxMDo0NDozOCIsInRlbmFudF9pZCI6IjEwNTUyMCIsImRiX25hbWUiOiJtdC1wcm9kLVRlbmFudHMiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBRE1JTklTVFJBVE9SIiwiZXhwIjoyNTM0MDIzMDA4MDAsImlzcyI6IkNsYXJlX0FJIiwiYXVkIjoiQ2xhcmVfQUkifQ.UgnjWDuRf6QOFjpoXxgN0tFfo7bQx-pTfqCXIseVGuc"
-WATI_API_URL = "https://live-mt-server.wati.io/105520/api/v1/getMessageTemplates"
+WATI_API_KEY = os.getenv("WATI_API_KEY")
+WATI_API_URL = os.getenv("WATI_API_URL")
 
 # ✅ Replace with your Zoho Bigin API details
 # ZOHO_ACCESS_TOKEN = "your_zoho_access_token"
@@ -16,6 +18,9 @@ WATI_API_URL = "https://live-mt-server.wati.io/105520/api/v1/getMessageTemplates
 # ✅ Fetch available WATI templates
 @app.route("/get-templates", methods=["GET"])
 def get_templates():
+    if not WATI_API_KEY or not WATI_API_URL:
+        return jsonify({"error": "WATI API details are missing in environment variables"}), 500
+    
     headers = {"Authorization": f"Bearer {WATI_API_KEY}"}
     response = requests.get(WATI_API_URL, headers=headers)
 
@@ -65,6 +70,9 @@ def get_templates():
 def index():
     return render_template("index.html")
 
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
 def handler(event, context):
     return app(event, context)
     
